@@ -1,0 +1,8 @@
+[registries.palantir]
+index = "sparse+https://artifactory.palantir.build/artifactory/api/cargo/internal-cargo-release/index/"
+
+[source.crates-io]
+replace-with = "external-cargo-crates-io"
+
+[source.external-cargo-crates-io]
+registry = "sparse+https://artifactory.palantir.build/artifactory/api/cargo/external-cargo-crates-io/index/"

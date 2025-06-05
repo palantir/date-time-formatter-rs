@@ -1,0 +1,6 @@
+[package]
+name = "date-time-formatter-rs"
+version.workspace = true
+edition = "2021"
+
+[dependencies]
