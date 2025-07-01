@@ -1,6 +1,10 @@
 [package]
-name = "date-time-formatter-rs"
+name = "rust_date_time_formatter"
 version.workspace = true
 edition = "2021"
 
 [dependencies]
+chrono = "0.4.41"
+chrono-tz = "0.10.3"
+csv = "1.3.1"
+num-bigint = "0.4.6"
