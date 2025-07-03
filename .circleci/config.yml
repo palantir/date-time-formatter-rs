@@ -15,7 +15,7 @@ aliases:
 version: 2.1
 jobs:
   build:
-    docker: [{ image: "docker.palantir.build/circle2-build-images/ubuntu-jammy-standard:1.60.0@sha256:2e893a1e269a08ea77efecbc146a29b2e8fbd1fbfbe2c2822e5f6017d695422a" }]
+    docker: [{ image: "docker.palantir.build/circle2-build-images/ubuntu-jammy-standard:1.61.0@sha256:01ff5b353f733b00aeba5ea7c045795adc96e05c3a9335545fd87a924e9e8ddf" }]
     resource_class: large
     environment:
       RUSTFLAGS: -Dwarnings
