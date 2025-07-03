@@ -6,6 +6,9 @@
 ==COMMIT_MSG==
 ==COMMIT_MSG==
 
+## Testing
+<!-- What kind of testing was performed to validate change is working as expected? Automated (unit, integration, stress/load), manual? -->
+
 ## Possible downsides?
 <!-- Please describe any way users could be negatively affected by this PR. -->
 
