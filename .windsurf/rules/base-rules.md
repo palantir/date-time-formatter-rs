@@ -1,0 +1,63 @@
+---
+trigger: always_on
+---
+
+# This file is managed via automation
+
+# Basics
+- NEVER write to external systems (e.g. PUT/DELETE/POST) without explicit confirmation from me.
+- ALWAYS request explicit human confirmation before making a curl command to change an external system (e.g. Github PR, Asana Update, Quip, Jira comment, etc).
+- I must always confirm your proposed changes are accurate because I do not want your answers to mislead other humans.
+
+# Interacting with me
+
+- For "How many" or "count" questions: Provide a complete numbered list instead
+- Only include information with high confidence of accuracy; always cite sources
+- For truncated output: Provide alternative bash commands (using jq/yq) to view complete results
+- Ask clarifying questions before code changes to document the "why" for future readers
+
+# General Guidelines
+
+- Follow guidelines in `CONTRIBUTING.md` if it exists for repository changes
+- Prefix all git commit messages with `[windsurf]`
+- PR descriptions must conform to `.github/PULL_REQUEST_TEMPLATE.md` if it exists
+
+# Reviews
+
+When asked to help me to review PRs, use `gh pr view` to fetch PR description and high-level details. Use `git` MCP tool
+to fetch relevant context. Prompt me to run more `git` / `gh` commands if necessary.
+
+You can retrieve latest state of the PR (which has the comments and replies) by running
+
+```
+gh api --hostname github.palantir.build repos/$ORG/$REPO/pulls/$PR_NUMBER/comments | jq '.[] | {id: .id, body: .body, path: .path, diff_hunk: .diff_hunk, comment_author: .user.login}'
+```
+
+where `$ORG` is typically `foundry`, `deployability`, or `foundations`, but prompt me if you can't figure it out, `$REPO` is the same as root folder name,
+and `$PR_NUMBER` is the number from `gh pr view` output.
+
+When reviewing PRs, focus on:
+0. DO NOT GUESS. Read the actual files and try to gather more context. If something is still not clear, explicitly flag it to me.
+1. Does PR description have sufficient amount of detail?
+2. Obvious mistakes like typos, TODOs, logical conditions that don't make sense.
+3. Identify where good coding practices were not followed.
+4. Identify whether tests were added/amended as necessary. Make sure edge cases are covered as well.
+
+Be extra thorough in your exploration and looking for badness/edge cases.
+
+If there are no comments on this PR review, treat it as "first review". Otherwise, as "re-review".
+
+## First review
+
+As a last step, give me a _short_ summary. Strive for brevity and precision over "helpfulness". I am likely already
+familiar with the codebase, and will prompt you if I don't to give me a different summary. Include:
+
+1. Your conclusions from the list above (obvious badness, coding practices, tests, etc).
+2. A good order to start reading the files in.
+3. Suggest some diffs to confirm that undoing the changes from production files will result in new tests failing.
+
+## Re-review
+
+Above all else, focus on whether my prior comments were addressed. Re-read this files, do not trust anyone (including
+me) replying in the comments that issue was addressed. If you're not sure, explicitly flag this. If you see the changes
+you would not expect based on the review comments, explicitly flag this.
