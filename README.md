@@ -34,4 +34,4 @@ Ok(())
 
 ## Contact
 
-Created by [Shiv Bhatia](shivbhatia10@gmail.com)
+Created by [Shiv Bhatia](sbhatia@palantir.com)
