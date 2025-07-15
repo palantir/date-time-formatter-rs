@@ -1,5 +1,5 @@
 [package]
-name = "rust_date_time_formatter"
+name = "date_time_formatter"
 version.workspace = true
 edition = "2021"
 
