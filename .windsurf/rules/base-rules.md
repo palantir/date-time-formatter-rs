@@ -5,6 +5,7 @@ trigger: always_on
 # This file is managed via automation
 
 # Basics
+
 - NEVER write to external systems (e.g. PUT/DELETE/POST) without explicit confirmation from me.
 - ALWAYS request explicit human confirmation before making a curl command to change an external system (e.g. Github PR, Asana Update, Quip, Jira comment, etc).
 - I must always confirm your proposed changes are accurate because I do not want your answers to mislead other humans.
@@ -29,15 +30,11 @@ to fetch relevant context. Prompt me to run more `git` / `gh` commands if necess
 
 You can retrieve latest state of the PR (which has the comments and replies) by running
 
-```
-gh api --hostname github.palantir.build repos/$ORG/$REPO/pulls/$PR_NUMBER/comments | jq '.[] | {id: .id, body: .body, path: .path, diff_hunk: .diff_hunk, comment_author: .user.login}'
-```
-
 where `$ORG` is typically `foundry`, `deployability`, or `foundations`, but prompt me if you can't figure it out, `$REPO` is the same as root folder name,
 and `$PR_NUMBER` is the number from `gh pr view` output.
 
-When reviewing PRs, focus on:
-0. DO NOT GUESS. Read the actual files and try to gather more context. If something is still not clear, explicitly flag it to me.
+When reviewing PRs, focus on: 0. DO NOT GUESS. Read the actual files and try to gather more context. If something is still not clear, explicitly flag it to me.
+
 1. Does PR description have sufficient amount of detail?
 2. Obvious mistakes like typos, TODOs, logical conditions that don't make sense.
 3. Identify where good coding practices were not followed.

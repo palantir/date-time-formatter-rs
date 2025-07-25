@@ -25,10 +25,6 @@ to fetch relevant context. Prompt me to run more `git` / `gh` commands if necess
 
 You can retrieve latest state of the PR (which has the comments and replies) by running
 
-```
-gh api --hostname github.palantir.build repos/$ORG/$REPO/pulls/$PR_NUMBER/comments | jq '.[] | {id: .id, body: .body, path: .path, diff_hunk: .diff_hunk, comment_author: .user.login}'
-```
-
 where `$ORG` is typically `foundry`, `deployability`, or `foundations`, but prompt me if you can't figure it out, `$REPO` is the same as root folder name,
 and `$PR_NUMBER` is the number from `gh pr view` output.
 
