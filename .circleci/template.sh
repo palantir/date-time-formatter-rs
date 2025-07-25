@@ -1,1 +1,1 @@
-export CIRCLECI_TEMPLATE=rust-library
+export CIRCLECI_TEMPLATE=rust-library-oss
