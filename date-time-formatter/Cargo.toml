@@ -2,6 +2,8 @@
 name = "date_time_formatter"
 version.workspace = true
 edition = "2021"
+description = "date-time-formatter-rs is a Rust crate that provides a simple and efficient way to parse and format date and time values. It is a rewrite of a subset of the Java time library, and aims to match its behaviour."
+license-file = "LICENSE"
 
 [dependencies]
 chrono = "0.4.41"
