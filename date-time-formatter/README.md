@@ -1,6 +1,6 @@
-## About date-time-formatter-rs
+## About date-time-formatter
 
-'date-time-formatter-rs' is a Rust crate that provides a simple and efficient way to parse and format date and time values. It is a rewrite of a subset of the Java time library, and aims to match its behaviour.
+'date-time-formatter' is a Rust crate that provides a simple and efficient way to parse and format date and time values. It is a rewrite of a subset of the Java time library, and aims to match its behaviour.
 
 This ports DateTimeFormatterBuilder 1:1 from Java into Rust, with the following simplifying assumptions:
 
