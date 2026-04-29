@@ -47,7 +47,7 @@ impl<T: 'static> AsAny for T {
     }
 }
 
-pub trait DateTimePrinterParser: AsAny + Debug {
+pub trait DateTimePrinterParser: AsAny + Debug + std::marker::Send + std::marker::Sync {
     fn format(&self, context: &mut DateTimePrintContext, buf: &mut String) -> Result<bool, String>;
     fn parse(
         &self,
