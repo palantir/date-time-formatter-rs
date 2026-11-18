@@ -32,7 +32,8 @@
 // so, delete this exception statement from your version. "
 
 use crate::{
-    date_time_parse_context::DateTimeParseContext, date_time_print_context::DateTimePrintContext,
+    date_time_parse_context::{char_at, DateTimeParseContext},
+    date_time_print_context::DateTimePrintContext,
     date_time_printer_parser::DateTimePrinterParser,
 };
 
@@ -69,16 +70,14 @@ impl DateTimePrinterParser for CharLiteralPrinterParser {
         text: &str,
         position: isize,
     ) -> Result<isize, String> {
-        let length = text.len();
-        if position == length as isize {
+        let Some(ch) = char_at(text, position as usize) else {
             return Ok(!position);
-        }
-        let ch = text.chars().nth(position as usize).unwrap();
+        };
         if ch != self.literal && context.is_case_sensitive()
             || !ch.eq_ignore_ascii_case(&self.literal) && !self.space_equals(context, ch)
         {
             return Ok(!position);
         }
-        Ok(position + 1)
+        Ok(position + ch.len_utf8() as isize)
     }
 }
