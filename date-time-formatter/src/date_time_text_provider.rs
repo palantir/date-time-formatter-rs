@@ -386,7 +386,7 @@ impl Store {
                 reverse
                     .entry(entry_value)
                     .and_modify(|existing| {
-                        if entry_key < &existing.1 {
+                        if entry_key > &existing.1 {
                             *existing = (entry_value, *entry_key);
                         }
                     })
