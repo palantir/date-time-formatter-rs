@@ -67,9 +67,7 @@ mod zone_text_printer_parser;
 
 #[cfg(test)]
 mod tests {
-    use std::fs::File;
-
-    use chrono::NaiveDate;
+    use chrono::{DateTime, FixedOffset, NaiveDate};
 
     use crate::{
         date_time_formatter::DateTimeFormatter, parsed::Parsed, temporal_field::TemporalField,
@@ -188,109 +186,64 @@ mod tests {
     }
 
     #[test]
-    fn test_datetime_formatter_with_csv_data() -> Result<(), String> {
-        // Load the test data from CSV file
-        let file = File::open("java_generated_test_cases/datetime_test_data.csv")
-            .map_err(|e| format!("Failed to open test data file: {}", e))?;
+    fn test_datetime_formatter_with_csv_data() {
+        check_java_generated_csv("java_generated_test_cases/datetime_test_data.csv");
+    }
 
-        let mut reader = csv::Reader::from_reader(file);
+    fn check_java_generated_csv(path: &str) {
+        let mut reader = csv::Reader::from_path(path).unwrap();
+        let headers = reader.headers().unwrap().clone();
+        let column = |name: &str| headers.iter().position(|h| h == name);
+        let (timestamp_col, pattern_col, formatted_col, recovered_col) = (
+            column("original_timestamp").unwrap(),
+            column("pattern").unwrap(),
+            column("formatted").unwrap(),
+            column("recovered_timestamp").unwrap(),
+        );
+        let offset_col = column("offset_seconds");
 
-        // Process each row independently
-        for (row_idx, result) in reader.records().enumerate() {
-            let record = result.map_err(|e| format!("Error reading CSV row {}: {}", row_idx, e))?;
+        let mut failures = vec![];
+        let mut rows = 0;
+        for record in reader.records() {
+            let record = record.unwrap();
+            rows += 1;
+            let timestamp: i64 = record[timestamp_col].parse().unwrap();
+            let offset_seconds: i32 = offset_col.map_or(0, |col| record[col].parse().unwrap());
+            let pattern = &record[pattern_col];
+            let expected_formatted = &record[formatted_col];
+            let expected_recovered: Option<i64> = match &record[recovered_col] {
+                "" => None,
+                value => Some(value.parse().unwrap()),
+            };
 
-            // Check if we have at least 4 columns
-            if record.len() < 3 {
-                return Err(format!("Row {} has fewer than 3 columns", row_idx));
+            let formatter = DateTimeFormatter::of_pattern(pattern).unwrap();
+            let datetime = DateTime::from_timestamp_micros(timestamp)
+                .unwrap()
+                .with_timezone(&FixedOffset::east_opt(offset_seconds).unwrap());
+            let formatted = formatter.format(&Parsed::of_chrono_datetime(datetime));
+            if formatted.as_deref() != Ok(expected_formatted) {
+                failures.push(format!(
+                    "format {pattern:?} {timestamp} {offset_seconds}s: expected {expected_formatted:?}, got {formatted:?}"
+                ));
             }
 
-            println!("===== Row {} =====", row_idx);
-
-            // Get the four columns from the row
-            let original_timestamp_str = &record[0];
-            let pattern = &record[1];
-            let expected_formatted = &record[2];
-
-            // Parse the original timestamp
-            let original_timestamp = original_timestamp_str.parse::<i64>().map_err(|e| {
-                format!(
-                    "Failed to parse timestamp {}: {}",
-                    original_timestamp_str, e
-                )
-            })?;
-
-            println!("Original timestamp: {}", original_timestamp);
-            println!("Pattern: '{}'", pattern);
-            println!("Expected formatted: '{}'", expected_formatted);
-
-            // Create a formatter for this pattern
-            let formatter = DateTimeFormatter::of_pattern(pattern).map_err(|e| {
-                format!(
-                    "Failed to create formatter for pattern '{}': {}",
-                    pattern, e
-                )
-            })?;
-
-            // Create a Parsed object from the timestamp
-            let parsed = Parsed::of_epoch_microseconds(original_timestamp);
-            println!("Parsed (original timestamp): {:?}", parsed);
-
-            // Format the timestamp and compare with expected
-            let formatted = formatter.format(&parsed)?;
-            println!("Actual formatted:   '{}'", formatted);
-            assert_eq!(formatted, expected_formatted);
-
-            // Parse back to timestamp if a recovered timestamp is expected
-            if record.len() >= 4 && !record[3].is_empty() {
-                let expected_recovered_timestamp = record[3].parse::<i64>().map_err(|e| {
-                    format!(
-                        "Failed to parse recovered timestamp {}: {}",
-                        record[3].to_owned(),
-                        e
-                    )
-                })?;
-
-                let recovered_parsed = formatter.parse(expected_formatted)?;
-                println!("Recovered Parsed: {:?}", recovered_parsed);
-
-                let recovered_timestamp = recovered_parsed.to_epoch_microseconds();
-
-                println!(
-                    "Expected recovered timestamp: {}",
-                    expected_recovered_timestamp
-                );
-                println!("Actual recovered timestamp:   {:?}", recovered_timestamp);
-
-                assert_eq!(recovered_timestamp, Ok(expected_recovered_timestamp));
-            } else {
-                // If the recovered timestamp field is empty or doesn't exist, verify that either:
-                // 1. Parsing fails entirely (formatter.parse returns None), or
-                // 2. Parsing succeeds but to_epoch_microseconds returns None
-
-                let parsed_result = formatter.parse(expected_formatted);
-
-                if let Ok(parsed_result) = parsed_result {
-                    let recovered_timestamp = parsed_result.to_epoch_microseconds();
-                    println!("Expected recovered timestamp: None (either parse failure or invalid date/time)");
-                    println!("Actual recovered timestamp:   {:?}", recovered_timestamp);
-
-                    // If parsing succeeded but we expected None, then to_epoch_microseconds should return an error
-                    assert!(
-                        recovered_timestamp.is_err(),
-                        "Expected recovered timestamp to be None, but got: {:?}",
-                        recovered_timestamp
-                    );
-                } else {
-                    // Parsing failed entirely, which is acceptable when we expect None
-                    println!("Parsing failed as expected for invalid format");
-                }
+            let recovered = formatter
+                .parse(expected_formatted)
+                .and_then(|parsed| parsed.to_epoch_microseconds())
+                .ok();
+            if recovered != expected_recovered {
+                failures.push(format!(
+                    "parse {pattern:?} {expected_formatted:?}: expected {expected_recovered:?}, got {recovered:?}"
+                ));
             }
-
-            println!("=====");
         }
 
-        println!("All tests passed successfully!");
-        Ok(())
+        assert!(
+            failures.is_empty(),
+            "{} failures across {rows} rows, first 20:\n{}",
+            failures.len(),
+            failures[..failures.len().min(20)].join("\n")
+        );
     }
 
     fn get_format_characteristics_cases() -> Vec<(&'static str, Vec<&'static str>)> {
