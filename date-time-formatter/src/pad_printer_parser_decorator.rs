@@ -32,7 +32,8 @@
 // so, delete this exception statement from your version. "
 
 use crate::{
-    date_time_parse_context::DateTimeParseContext, date_time_print_context::DateTimePrintContext,
+    date_time_parse_context::{ascii_at, DateTimeParseContext},
+    date_time_print_context::DateTimePrintContext,
     date_time_printer_parser::DateTimePrinterParser,
 };
 
@@ -94,11 +95,15 @@ impl DateTimePrinterParser for PadPrinterParserDecorator {
         }
         let mut pos = position;
         while pos < end_pos
-            && context.char_equals(text.chars().nth(pos as usize).unwrap(), self.pad_char)
+            && ascii_at(text, pos as usize).is_some_and(|ch| context.char_equals(ch, self.pad_char))
         {
             pos += 1;
         }
-        let text = &text[0..end_pos as usize];
+        let mut truncated_len = end_pos as usize;
+        while !text.is_char_boundary(truncated_len) {
+            truncated_len -= 1;
+        }
+        let text = &text[..truncated_len];
         let result_pos = self.printer_parser.parse(context, text, pos)?;
         if result_pos != end_pos && strict {
             return Ok(!(position + pos));

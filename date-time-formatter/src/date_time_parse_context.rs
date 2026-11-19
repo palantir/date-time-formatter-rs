@@ -38,6 +38,19 @@ use crate::{
     resolver_style::ResolverStyle, temporal_field::TemporalField,
 };
 
+// Parse positions are byte offsets; parsers that only match ASCII can read bytes directly.
+pub fn ascii_at(text: &str, position: usize) -> Option<char> {
+    text.as_bytes().get(position).copied().map(char::from)
+}
+
+pub fn ascii_chars(text: &str) -> Vec<char> {
+    text.bytes().map(char::from).collect()
+}
+
+pub fn char_at(text: &str, position: usize) -> Option<char> {
+    text.get(position..).and_then(|rest| rest.chars().next())
+}
+
 pub struct DateTimeParseContext<'a> {
     formatter: &'a DateTimeFormatter,
     case_sensitive: bool,
@@ -68,12 +81,12 @@ impl<'a> DateTimeParseContext<'a> {
         offset2: usize,
         length: usize,
     ) -> bool {
-        if offset1 + length > cs1.len() || offset2 + length > cs2.len() {
+        let (Some(slice1), Some(slice2)) = (
+            cs1.get(offset1..offset1 + length),
+            cs2.get(offset2..offset2 + length),
+        ) else {
             return false;
-        }
-
-        let slice1 = &cs1[offset1..offset1 + length];
-        let slice2 = &cs2[offset2..offset2 + length];
+        };
 
         if self.case_sensitive {
             slice1 == slice2

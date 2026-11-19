@@ -32,8 +32,10 @@
 // so, delete this exception statement from your version. "
 
 use crate::{
-    date_time_parse_context::DateTimeParseContext, date_time_print_context::DateTimePrintContext,
-    date_time_printer_parser::DateTimePrinterParser, temporal_field::TemporalField,
+    date_time_parse_context::{ascii_at, ascii_chars, DateTimeParseContext},
+    date_time_print_context::DateTimePrintContext,
+    date_time_printer_parser::DateTimePrinterParser,
+    temporal_field::TemporalField,
 };
 
 #[derive(Debug)]
@@ -164,7 +166,7 @@ impl OffsetIdPrinterParser {
         if is_colon && array_index != 1 {
             // ':' will precede only in case of minute/second
             if pos + 1 > parse_text.len() as isize
-                || parse_text.chars().nth(pos as usize).unwrap() != ':'
+                || ascii_at(parse_text, pos as usize) != Some(':')
             {
                 return false;
             }
@@ -175,7 +177,7 @@ impl OffsetIdPrinterParser {
             return false;
         }
 
-        let chars: Vec<char> = parse_text.chars().collect();
+        let chars = ascii_chars(parse_text);
         let ch1 = chars[pos as usize];
         let ch2 = chars[(pos + 1) as usize];
         pos += 2;
@@ -204,7 +206,7 @@ impl OffsetIdPrinterParser {
         let mut pos = array[0];
         let mut available = 0;
         let mut chars = vec!['\0'; max_digits as usize];
-        let text_chars: Vec<char> = parse_text.chars().collect();
+        let text_chars = ascii_chars(parse_text);
 
         for i in 0..max_digits {
             if pos + 1 > parse_text.len() as isize {
@@ -343,7 +345,7 @@ impl DateTimePrinterParser for OffsetIdPrinterParser {
         }
 
         // parse normal plus/minus offset
-        let chars: Vec<char> = text.chars().collect();
+        let chars = ascii_chars(text);
         let sign = chars.get(position as usize).unwrap();
 
         if *sign == '+' || *sign == '-' {

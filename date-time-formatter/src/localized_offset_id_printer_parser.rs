@@ -32,8 +32,9 @@
 // so, delete this exception statement from your version. "
 
 use crate::{
-    date_time_print_context::DateTimePrintContext, date_time_printer_parser::DateTimePrinterParser,
-    temporal_field::TemporalField, text_style::TextStyle,
+    date_time_parse_context::ascii_at, date_time_print_context::DateTimePrintContext,
+    date_time_printer_parser::DateTimePrinterParser, temporal_field::TemporalField,
+    text_style::TextStyle,
 };
 
 #[derive(Debug)]
@@ -51,14 +52,10 @@ impl LocalizedOffsetIdPrinterParser {
     }
 
     fn get_digit(text: &str, position: usize) -> isize {
-        if position >= text.len() {
-            return -1;
+        match ascii_at(text, position) {
+            Some(c) if c.is_ascii_digit() => (c as u32 - '0' as u32) as isize,
+            _ => -1,
         }
-        let c = text.chars().nth(position).unwrap();
-        if !c.is_ascii_digit() {
-            return -1;
-        }
-        (c as u32 - '0' as u32) as isize
     }
 }
 
@@ -142,10 +139,10 @@ impl DateTimePrinterParser for LocalizedOffsetIdPrinterParser {
         }
 
         // Get the sign character
-        let sign = text.chars().nth(pos).unwrap();
-        if sign == '+' {
+        let sign = ascii_at(text, pos);
+        if sign == Some('+') {
             negative = 1;
-        } else if sign == '-' {
+        } else if sign == Some('-') {
             negative = -1;
         } else {
             return context.set_parsed_field(
@@ -168,7 +165,7 @@ impl DateTimePrinterParser for LocalizedOffsetIdPrinterParser {
             pos += 1;
 
             // Check if we have valid hours and the expected colon
-            if h1 < 0 || h2 < 0 || pos >= end || text.chars().nth(pos).unwrap() != ':' {
+            if h1 < 0 || h2 < 0 || ascii_at(text, pos) != Some(':') {
                 return Ok(!position);
             }
             pos += 1;
@@ -187,7 +184,7 @@ impl DateTimePrinterParser for LocalizedOffsetIdPrinterParser {
             m = m1 * 10 + m2;
 
             // Check for seconds
-            if pos + 2 < end && text.chars().nth(pos).unwrap() == ':' {
+            if pos + 2 < end && ascii_at(text, pos) == Some(':') {
                 let s1 = Self::get_digit(text, pos + 1);
                 let s2 = Self::get_digit(text, pos + 2);
 
@@ -214,7 +211,7 @@ impl DateTimePrinterParser for LocalizedOffsetIdPrinterParser {
                 }
 
                 // Check for minutes
-                if pos + 2 < end && text.chars().nth(pos).unwrap() == ':' {
+                if pos + 2 < end && ascii_at(text, pos) == Some(':') {
                     let m1 = Self::get_digit(text, pos + 1);
                     let m2 = Self::get_digit(text, pos + 2);
 
@@ -223,7 +220,7 @@ impl DateTimePrinterParser for LocalizedOffsetIdPrinterParser {
                         pos += 3;
 
                         // Check for seconds
-                        if pos + 2 < end && text.chars().nth(pos).unwrap() == ':' {
+                        if pos + 2 < end && ascii_at(text, pos) == Some(':') {
                             let s1 = Self::get_digit(text, pos + 1);
                             let s2 = Self::get_digit(text, pos + 2);
 

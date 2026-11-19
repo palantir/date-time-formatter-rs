@@ -32,8 +32,10 @@
 // so, delete this exception statement from your version. "
 
 use crate::{
-    date_time_parse_context::DateTimeParseContext, date_time_print_context::DateTimePrintContext,
-    date_time_printer_parser::DateTimePrinterParser, sign_style::SignStyle,
+    date_time_parse_context::{ascii_chars, DateTimeParseContext},
+    date_time_print_context::DateTimePrintContext,
+    date_time_printer_parser::DateTimePrinterParser,
+    sign_style::SignStyle,
     temporal_field::TemporalField,
 };
 
@@ -192,7 +194,7 @@ impl<T: DefaultNumberPrinterParser> DateTimePrinterParser for T {
             return Ok(!position);
         }
 
-        let text_chars: Vec<char> = text.chars().collect();
+        let text_chars = ascii_chars(text);
         if position < 0 || position >= text_chars.len() as isize {
             return Err("Index out of bounds".to_owned());
         }
