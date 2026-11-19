@@ -1,3 +1,7 @@
+<p align="right">
+<a href="https://autorelease.general.dmz.palantir.tech/palantir/date-time-formatter-rs"><img src="https://img.shields.io/badge/Perform%20an-Autorelease-success.svg" alt="Autorelease"></a>
+</p>
+
 ## About date-time-formatter
 
 'date-time-formatter' is a Rust crate that provides a simple and efficient way to parse and format date and time values. It is a rewrite of a subset of the Java time library, and aims to match its behaviour.
