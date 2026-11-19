@@ -93,6 +93,26 @@ mod tests {
     }
 
     #[test]
+    fn test_pad() -> Result<(), String> {
+        let formatter = DateTimeFormatter::of_pattern("ppd/MM/yyyy")?;
+        for (day, text, micros) in [
+            (5, " 5/05/2023", 1683244800000000),
+            (15, "15/05/2023", 1684108800000000),
+        ] {
+            let date = NaiveDate::from_ymd_opt(2023, 5, day).unwrap();
+            let parsed = Parsed::of_chrono_datetime(date.and_hms_opt(0, 0, 0).unwrap().and_utc());
+            assert_eq!(formatter.format(&parsed)?, text);
+            assert_eq!(formatter.parse(text)?.to_epoch_microseconds()?, micros);
+        }
+
+        let too_narrow = DateTimeFormatter::of_pattern("pd")?;
+        assert!(too_narrow
+            .format(&Parsed::of_epoch_microseconds(1684108800000000))
+            .is_err());
+        Ok(())
+    }
+
+    #[test]
     fn test_default_behaviour() -> Result<(), String> {
         let formatter = DateTimeFormatter::of_pattern_with_defaults(
             "yyyy-MM",

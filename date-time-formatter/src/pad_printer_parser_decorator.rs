@@ -67,15 +67,8 @@ impl DateTimePrinterParser for PadPrinterParserDecorator {
                 "Cannot print as output of {len} characters exceeds pad with of current pad_width"
             ));
         }
-        let count = self.pad_width - len;
-        if count == 0 {
-            return Ok(false);
-        }
-        if count == 1 {
-            buf.insert(pre_len, self.pad_char);
-            return Ok(true);
-        }
-        buf.insert_str(pre_len, &self.pad_char.to_string().repeat(count as usize));
+        let count = (self.pad_width - len) as usize;
+        buf.insert_str(pre_len, &self.pad_char.to_string().repeat(count));
         Ok(true)
     }
 
